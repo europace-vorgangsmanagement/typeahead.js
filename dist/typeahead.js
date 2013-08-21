@@ -1,11 +1,11 @@
 /*!
- * typeahead.js 0.9.3
+ * typeahead.js 0.9.3-modified
  * https://github.com/twitter/typeahead
  * Copyright 2013 Twitter, Inc. and other contributors; Licensed MIT
  */
 
 (function($) {
-    var VERSION = "0.9.3";
+    var VERSION = "0.9.3-modified";
     var utils = {
         isMsie: function() {
             var match = /(msie) ([\w.]+)/i.exec(navigator.userAgent);
@@ -390,6 +390,7 @@
             this.name = o.name || utils.getUniqueId();
             this.limit = o.limit || 5;
             this.minLength = o.minLength == null ? 1 : o.minLength;
+            this.showDefaultList = o.showDefaultList == null ? false : o.showDefaultList;
             this.header = o.header;
             this.footer = o.footer;
             this.valueKey = o.valueKey || "value";
@@ -495,7 +496,7 @@
             },
             _getDefaultList: function() {
                 var defaultList = [];
-                for (var i = 0; i < this.limit; i++) {
+                for (var i = 0; i < Math.min(this.limit, this.defaultOrder.length); i++) {
                     defaultList.push(this.itemHash[this.defaultOrder[i]]);
                 }
                 return defaultList;
@@ -549,7 +550,9 @@
                 if (query.length < this.minLength) {
                     return;
                 }
-                if (query.length == 0) return cb(this._getDefaultList());
+                if (query.length == 0 || this.showDefaultList) {
+                    return cb(this._getDefaultList());
+                }
                 terms = utils.tokenizeQuery(query);
                 suggestions = this._getLocalSuggestions(terms).slice(0, this.limit);
                 if (suggestions.length < this.limit && this.transport) {

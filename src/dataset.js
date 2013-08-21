@@ -30,6 +30,7 @@ var Dataset = (function() {
     this.name = o.name || utils.getUniqueId();
     this.limit = o.limit || 5;
     this.minLength = o.minLength == null ? 1 : o.minLength;
+    this.showDefaultList = o.showDefaultList == null ? false : o.showDefaultList;
     this.header = o.header;
     this.footer = o.footer;
     this.valueKey = o.valueKey || 'value';
@@ -182,19 +183,19 @@ var Dataset = (function() {
       // create default ordering if default suggestions are enabled
       if (this.minLength===0){
         for ( var hashKey in processedData.itemHash ){
-          this.defaultOrder.push(hashKey);  
+          this.defaultOrder.push(hashKey);
         }
         if ( utils.isFunction(this.defaultSort) ){
           this.defaultOrder.sort(function(a,b){
             return that.defaultSort(that.itemHash[a], that.itemHash[b]);
           });
-        }  
+        }
       }
     },
 
     _getDefaultList: function(){
       var defaultList = [];
-      for (var i=0; i<this.limit; i++){
+      for (var i=0; i<Math.min(this.limit, this.defaultOrder.length); i++) {
         defaultList.push(this.itemHash[this.defaultOrder[i]])
       }
       return defaultList;
@@ -283,7 +284,9 @@ var Dataset = (function() {
       }
 
       //show defaults
-      if (query.length==0) return cb(this._getDefaultList());
+      if (query.length == 0 || this.showDefaultList) {
+        return cb(this._getDefaultList());
+      }
 
       terms = utils.tokenizeQuery(query);
       suggestions = this._getLocalSuggestions(terms).slice(0, this.limit);
